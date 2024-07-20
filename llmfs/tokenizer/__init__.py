@@ -1,5 +1,5 @@
-from llmfs.tokenizer.tokenizer import SimpleTokenizerV1
+from llmfs.tokenizer.tokenizer import SimpleTokenizerV2
 
 __all__ = [
-    "SimpleTokenizerV1",
+    "SimpleTokenizerV2",
 ]

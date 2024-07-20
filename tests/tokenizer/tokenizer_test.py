@@ -1,7 +1,7 @@
 import re
 import os
 
-from llmfs.tokenizer import SimpleTokenizerV1
+from llmfs.tokenizer import SimpleTokenizerV2
 from llmfs import ROOT_DIR
 
 
@@ -17,7 +17,7 @@ def test_encode():
     all_words = sorted(set(preprocessed))
     vocab = {token: integer for integer, token in enumerate(all_words)}
 
-    tokenizer = SimpleTokenizerV1(vocab)
+    tokenizer = SimpleTokenizerV2(vocab)
     text = """"It's the last he painted, you know," Mrs. Gisburn said with pardonable
     pride."""
     ids = tokenizer.encode(text)

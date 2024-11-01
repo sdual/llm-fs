@@ -7,9 +7,7 @@ from llmfs.tokenizer import SimpleTokenizerV2
 
 def test_encode():
     with open(
-        os.path.join(ROOT_DIR, "resources/texts", "the-verdict.txt"),
-        "r",
-        encoding="utf-8",
+        os.path.join(ROOT_DIR, "resources/texts", "the-verdict.txt"), "r", encoding="utf-8"
     ) as f:
         raw_text = f.read()
     preprocessed = re.split(r'([,.:;?_!"()\']|--|\s)', raw_text)
@@ -18,8 +16,7 @@ def test_encode():
     vocab = {token: integer for integer, token in enumerate(all_words)}
 
     tokenizer = SimpleTokenizerV2(vocab)
-    text = """"It's the last he painted, you know," Mrs. Gisburn said with pardonable
-    pride."""
+    text = """"It's the last he painted, you know," Mrs. Gisburn said with pardonable pride."""
     ids = tokenizer.encode(text)
 
     assert ids == [

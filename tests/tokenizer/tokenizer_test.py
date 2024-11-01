@@ -1,8 +1,8 @@
-import re
 import os
+import re
 
-from llmfs.tokenizer import SimpleTokenizerV2
 from llmfs import ROOT_DIR
+from llmfs.tokenizer import SimpleTokenizerV2
 
 
 def test_encode():

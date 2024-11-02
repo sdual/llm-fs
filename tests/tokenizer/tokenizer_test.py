@@ -1,13 +1,13 @@
 import os
 import re
 
-from llmfs import ROOT_DIR
+from llmfs import PROJECT_ROOT
 from llmfs.tokenizer import SimpleTokenizerV2
 
 
 def test_encode():
     with open(
-        os.path.join(ROOT_DIR, "resources/texts", "the-verdict.txt"), "r", encoding="utf-8"
+        os.path.join(PROJECT_ROOT, "resources/texts", "the-verdict.txt"), "r", encoding="utf-8"
     ) as f:
         raw_text = f.read()
     preprocessed = re.split(r'([,.:;?_!"()\']|--|\s)', raw_text)

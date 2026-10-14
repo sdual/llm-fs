@@ -2,7 +2,7 @@ import os
 
 import torch
 
-from llmfs import PROJECT_ROOT
+from llmfs import PROJECT_ROOT, math
 from llmfs.embedding import embed
 from llmfs.input_target import create_dataloader_v1
 
@@ -43,5 +43,41 @@ def embedding():
     embed()
 
 
+def attention():
+    vocab_size = 50257
+    output_dim = 3
+    text = "Your journey starts with one step"
+
+    max_length = 6
+    dataloader = create_dataloader_v1(
+        text, batch_size=1, max_length=max_length, stride=max_length, shuffle=False
+    )
+    data_iter = iter(dataloader)
+
+    inputs, targets = next(data_iter)
+    print(inputs)
+
+    vocab_size = 50257
+    output_dim = 3
+    token_embedding_layer = torch.nn.Embedding(vocab_size, output_dim)
+
+    token_embeddings = token_embedding_layer(inputs)
+    print(token_embeddings)
+
+    query = token_embeddings[0][1]
+    print(query)
+    attn_scores_2 = torch.empty(token_embeddings[0].shape[0])
+    for i, x_i in enumerate(token_embeddings[0]):
+        attn_scores_2[i] = torch.dot(x_i, query)
+
+    print(torch.softmax(attn_scores_2, dim=0))
+
+    context_vec_2 = torch.zeros(query.shape)
+    for i, x_i in enumerate(token_embeddings[0]):
+        context_vec_2 += attn_scores_2[i] * x_i
+
+    print(context_vec_2)
+
+
 if __name__ == "__main__":
-    encoding()
+    attention()

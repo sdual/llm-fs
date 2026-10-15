@@ -1,4 +1,5 @@
 import os
+from ast import AnnAssign
 
 import torch
 
@@ -79,5 +80,88 @@ def attention():
     print(context_vec_2)
 
 
+def all_attetions():
+    vocab_size = 50257
+    output_dim = 3
+    text = "Your journey starts with one step"
+
+    max_length = 6
+    dataloader = create_dataloader_v1(
+        text, batch_size=1, max_length=max_length, stride=max_length, shuffle=False
+    )
+    data_iter = iter(dataloader)
+
+    inputs, targets = next(data_iter)
+
+    vocab_size = 50257
+    output_dim = 3
+    token_embedding_layer = torch.nn.Embedding(vocab_size, output_dim)
+
+    token_embeddings = token_embedding_layer(inputs)
+    print(token_embeddings)
+
+    #    attn_scores = torch.empty(6, 6)
+    #    for i, x_i in enumerate(token_embeddings[0]):
+    #        for j, x_j in enumerate(token_embeddings[0]):
+    #            attn_scores[i, j] = torch.dot(x_i, x_j)
+    #
+    attn_scores = token_embeddings[0] @ token_embeddings[0].T
+    print(attn_scores)
+
+    attn_weights = torch.softmax(attn_scores, dim=-1)
+    print(attn_weights)
+
+    all_context_vecs = attn_weights @ token_embeddings[0]
+    print(all_context_vecs)
+
+
+def weight_attentions():
+    vocab_size = 50257
+    output_dim = 3
+    text = "Your journey starts with one step"
+
+    max_length = 6
+    dataloader = create_dataloader_v1(
+        text, batch_size=1, max_length=max_length, stride=max_length, shuffle=False
+    )
+    data_iter = iter(dataloader)
+
+    raw_inputs, targets = next(data_iter)
+
+    vocab_size = 50257
+    output_dim = 3
+    token_embedding_layer = torch.nn.Embedding(vocab_size, output_dim)
+    token_embeddings = token_embedding_layer(raw_inputs)
+    inputs = token_embeddings[0]
+
+    x_2 = inputs[1]
+    print(x_2)
+
+    d_in = inputs.shape[1]
+    d_out = 2
+    torch.manual_seed(123)
+    W_query = torch.nn.Parameter(torch.rand(d_in, d_out), requires_grad=False)
+    W_key = torch.nn.Parameter(torch.rand(d_in, d_out), requires_grad=False)
+    W_value = torch.nn.Parameter(torch.rand(d_in, d_out), requires_grad=False)
+
+    query_2 = x_2 @ W_query
+    key_2 = x_2 @ W_key
+    value_2 = x_2 @ W_value
+    print(query_2)
+
+    keys = inputs @ W_key
+    values = inputs @ W_value
+    print(keys)
+    print("keys.shape:", keys.shape)
+    print("value.shape:", values.shape)
+
+    attn_score_2 = query_2 @ keys.T
+    print(attn_score_2)
+
+    d_k = keys.shape[-1]
+    attn_weights_2 = torch.softmax(attn_score_2 / d_k**0.5, dim=-1)
+    print(attn_weights_2)
+
+
 if __name__ == "__main__":
-    attention()
+    weight_attentions()

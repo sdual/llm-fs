@@ -123,9 +123,9 @@ class MultiHeadAttention(nn.Module):
 
         attn_scores = queries @ keys.transpose(2, 3)
 
-        mask_pool = self.mask.pool()[:num_tokens, :num_tokens]
+        mask_bool = self.mask.bool()[:num_tokens, :num_tokens]
 
-        attn_scores.masked_fill_(mask_pool, -torch.inf)
+        attn_scores.masked_fill_(mask_bool, -torch.inf)
 
         attn_weights = torch.softmax(
             attn_scores / keys.shape[-1] ** 0.5, dim=-1)
@@ -133,6 +133,6 @@ class MultiHeadAttention(nn.Module):
 
         context_vec = (attn_weights @ values).transpose(1, 2)
 
-        context_vec = context_vec.contigous().view(b, num_tokens, self.d_out)
+        context_vec = context_vec.contiguous().view(b, num_tokens, self.d_out)
         context_vec = self.out_proj(context_vec)
         return context_vec

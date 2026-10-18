@@ -1,1 +1,1 @@
-from llmfs.attention.self_attn import SelfAttentionV2
+from llmfs.attention.self_attn import CausalAttention, SelfAttentionV2

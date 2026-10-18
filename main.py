@@ -2,8 +2,8 @@ import os
 
 import torch
 
-from llmfs import PROJECT_ROOT, math
-from llmfs.attention import SelfAttentionV2
+from llmfs import PROJECT_ROOT
+from llmfs.attention import CausalAttention, SelfAttentionV2
 from llmfs.embedding import embed
 from llmfs.input_target import create_dataloader_v1
 
@@ -191,5 +191,34 @@ def self_attention():
     print(sa_v2(inputs))
 
 
+def causal_attention():
+    vocab_size = 50257
+    output_dim = 3
+    text = "Your journey starts with one step"
+
+    max_length = 6
+    dataloader = create_dataloader_v1(
+        text, batch_size=1, max_length=max_length, stride=max_length, shuffle=False
+    )
+    data_iter = iter(dataloader)
+
+    raw_inputs, targets = next(data_iter)
+
+    vocab_size = 50257
+    output_dim = 3
+    token_embedding_layer = torch.nn.Embedding(vocab_size, output_dim)
+    token_embeddings = token_embedding_layer(raw_inputs)
+    inputs = token_embeddings[0]
+    print(inputs)
+
+    d_in = inputs.shape[1]
+    d_out = 2
+
+    torch.manual_seed(789)
+    context_length = 6
+    ca = CausalAttention(d_in, d_out, context_length, 0.0)
+    print(ca(token_embeddings))
+
+
 if __name__ == "__main__":
-    self_attention()
+    causal_attention()

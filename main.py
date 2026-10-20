@@ -1,11 +1,14 @@
 import os
 
+import tiktoken
 import torch
+from torch import nn
 
 from llmfs import PROJECT_ROOT
 from llmfs.attention import CausalAttention, SelfAttentionV2
 from llmfs.embedding import embed
 from llmfs.input_target import create_dataloader_v1
+from llmfs.model import DummyGPTModel, DummyLayerNorm, DummyTransformerBlock
 
 
 def encoding():
@@ -220,5 +223,52 @@ def causal_attention():
     print(ca(token_embeddings))
 
 
+GPT_CONFIG_124M = {
+    "vocab_size": 50257,
+    "context_length": 1024,
+    "emb_dim": 768,
+    "n_heads": 12,
+    "n_layers": 12,
+    "drop_rate": 0.1,
+    "qkv_bias": False,
+}
+
+
+def gpt():
+    tokenizer = tiktoken.get_encoding("gpt2")
+    batch = []
+    txt1 = "Every effort moves you"
+    txt2 = "Every day holds a"
+
+    batch.append(torch.tensor(tokenizer.encode(txt1)))
+    batch.append(torch.tensor(tokenizer.encode(txt2)))
+
+    batch = torch.stack(batch, dim=0)
+    print(batch)
+
+    torch.manual_seed(123)
+    model = DummyGPTModel(GPT_CONFIG_124M)
+    logits = model(batch)
+    print("Output shape: ", logits.shape)
+    print(logits)
+
+
+def normalize():
+    torch.manual_seed(123)
+    batch_example = torch.randn(2, 5)
+    layer = nn.Sequential(nn.Linear(5, 6), nn.ReLU())
+    out = layer(batch_example)
+    print(out)
+
+    mean = out.mean(dim=-1, keepdim=True)
+    var = out.var(dim=-1, keepdim=True)
+
+    print("Mean:\n", mean)
+    print("Variance:\n", var)
+
+    out_norm = (out - mean) / torch.sqrt(var)
+    print("Normalzed layer outputs:\n", out_norm)
+
+
 if __name__ == "__main__":
-    causal_attention()
+    normalize()

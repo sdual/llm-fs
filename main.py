@@ -2,13 +2,14 @@ import os
 
 import tiktoken
 import torch
-from torch import nn
+from torch import mode, nn
 
 from llmfs import PROJECT_ROOT
 from llmfs.attention import CausalAttention, SelfAttentionV2
 from llmfs.embedding import embed
 from llmfs.input_target import create_dataloader_v1
-from llmfs.model import DummyGPTModel, DummyLayerNorm, DummyTransformerBlock
+from llmfs.model import (DummyGPTModel, DummyLayerNorm, DummyTransformerBlock,
+                         ExampleDeepNeuralNetwork, GPTModel)
 
 
 def encoding():
@@ -234,7 +235,7 @@ GPT_CONFIG_124M = {
 }
 
 
-def gpt():
+def dummy_gptmy_gpt():
     tokenizer = tiktoken.get_encoding("gpt2")
     batch = []
     txt1 = "Every effort moves you"
@@ -270,5 +271,51 @@ def normalize():
     print("Normalzed layer outputs:\n", out_norm)
 
 
+def example_deep_neural_net():
+    layer_sizes = [3, 3, 3, 3, 3, 1]
+    sample_input = torch.tensor([[1.0, 0.0, -1.0]])
+
+    torch.manual_seed(123)
+
+    model_without_shortcut = ExampleDeepNeuralNetwork(
+        layer_sizes, use_shortcut=True)
+
+    print_gradients(model_without_shortcut, sample_input)
+
+
+def print_gradients(model, x):
+    output = model(x)
+    target = torch.tensor([[0.0]])
+
+    loss = nn.MSELoss()
+    loss = loss(output, target)
+
+    loss.backward()
+
+    for name, param in model.named_parameters():
+        if "weight" in name:
+            print(f"{name} has gradient mean of {
+                  param.grad.abs().mean().item()}")
+
+
+def gpt():
+    tokenizer = tiktoken.get_encoding("gpt2")
+    batch = []
+    txt1 = "Every effort moves you"
+    txt2 = "Every day holds a"
+
+    batch.append(torch.tensor(tokenizer.encode(txt1)))
+    batch.append(torch.tensor(tokenizer.encode(txt2)))
+
+    batch = torch.stack(batch, dim=0)
+    print(batch)
+
+    torch.manual_seed(123)
+    model = GPTModel(GPT_CONFIG_124M)
+    logits = model(batch)
+    print("Output shape: ", logits.shape)
+    print(logits)
+
+
 if __name__ == "__main__":
-    normalize()
+    gpt()

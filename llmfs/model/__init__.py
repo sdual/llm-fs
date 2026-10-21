@@ -1,2 +1,3 @@
 from llmfs.model.gpt import (DummyGPTModel, DummyLayerNorm,
-                             DummyTransformerBlock)
+                             DummyTransformerBlock, ExampleDeepNeuralNetwork,
+                             GPTModel)

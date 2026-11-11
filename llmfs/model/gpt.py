@@ -198,7 +198,7 @@ def generate(model, idx, max_new_tokens, context_size, temperature=0.0, top_k=No
         else:
             idx_next = torch.argmax(logits, dim=-1, keepdim=True)
 
-        if idx_cond == eos_id:
+        if eos_id is not None and (idx_next == eos_id).all():
             break
 
         idx = torch.cat((idx, idx_next), dim=1)

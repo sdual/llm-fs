@@ -16,7 +16,8 @@ class DummyGPTModel(nn.Module):
         )
 
         self.filan_norm = DummyLayerNorm(cfg["emb_dim"])
-        self.out_head = nn.Linear(cfg["emb_dim"], cfg["vocab_size"], bias=False)
+        self.out_head = nn.Linear(
+            cfg["emb_dim"], cfg["vocab_size"], bias=False)
 
     def forward(self, in_idx):
         batch_size, seq_len = in_idx.shape
@@ -53,10 +54,12 @@ class GPTModel(nn.Module):
         self.pos_emb = nn.Embedding(cfg["context_length"], cfg["emb_dim"])
         self.drop_emb = nn.Dropout(cfg["drop_rate"])
 
-        self.trf_blocks = nn.Sequential(*[TransformerBlock(cfg) for _ in range(cfg["n_layers"])])
+        self.trf_blocks = nn.Sequential(
+            *[TransformerBlock(cfg) for _ in range(cfg["n_layers"])])
 
         self.filan_norm = LayerNorm(cfg["emb_dim"])
-        self.out_head = nn.Linear(cfg["emb_dim"], cfg["vocab_size"], bias=False)
+        self.out_head = nn.Linear(
+            cfg["emb_dim"], cfg["vocab_size"], bias=False)
 
     def forward(self, in_idx):
         batch_size, seq_len = in_idx.shape
@@ -104,11 +107,16 @@ class ExampleDeepNeuralNetwork(nn.Module):
 
         self.layers = nn.ModuleList(
             [
-                nn.Sequential(nn.Linear(layer_sizes[0], layer_sizes[1]), nn.GELU()),
-                nn.Sequential(nn.Linear(layer_sizes[1], layer_sizes[2]), nn.GELU()),
-                nn.Sequential(nn.Linear(layer_sizes[2], layer_sizes[3]), nn.GELU()),
-                nn.Sequential(nn.Linear(layer_sizes[3], layer_sizes[4]), nn.GELU()),
-                nn.Sequential(nn.Linear(layer_sizes[4], layer_sizes[5]), nn.GELU()),
+                nn.Sequential(
+                    nn.Linear(layer_sizes[0], layer_sizes[1]), nn.GELU()),
+                nn.Sequential(
+                    nn.Linear(layer_sizes[1], layer_sizes[2]), nn.GELU()),
+                nn.Sequential(
+                    nn.Linear(layer_sizes[2], layer_sizes[3]), nn.GELU()),
+                nn.Sequential(
+                    nn.Linear(layer_sizes[3], layer_sizes[4]), nn.GELU()),
+                nn.Sequential(
+                    nn.Linear(layer_sizes[4], layer_sizes[5]), nn.GELU()),
             ]
         )
 
@@ -166,4 +174,33 @@ def generate_text_simple(model, idx, max_new_tokens, context_size):
         probas = torch.softmax(logits, dim=-1)
         idx_next = torch.argmax(probas, dim=-1, keepdim=True)
         idx = torch.cat((idx, idx_next), dim=1)
+    return idx
+
+
+def generate(model, idx, max_new_tokens, context_size, temperature=0.0, top_k=None, eos_id=None):
+    for _ in range(max_new_tokens):
+        idx_cond = idx[:, -context_size:]
+        with torch.no_grad():
+            logits = model(idx_cond)
+        logits = logits[:, -1, :]
+
+        if top_k is not None:
+            top_logits, _ = torch.topk(logits, top_k)
+            min_val = top_logits[:, -1]
+            logits = torch.where(
+                logits < min_val, torch.tensor(
+                    float("-inf")).to(logits.device), logits
+            )
+        if temperature > 0.0:
+            logits = logits / temperature
+            probs = torch.softmax(logits, dim=-1)
+            idx_next = torch.multinomial(probs, num_samples=1)
+        else:
+            idx_next = torch.argmax(logits, dim=-1, keepdim=True)
+
+        if idx_cond == eos_id:
+            break
+
+        idx = torch.cat((idx, idx_next), dim=1)
+
     return idx
